@@ -13,6 +13,8 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "vs/": fileURLToPath(new URL("./src/vs/", import.meta.url)),
+      "vs/css!": fileURLToPath(new URL("", import.meta.url)),
+      "vs/nls": fileURLToPath(new URL("./src/vs/nls.mock", import.meta.url)),
     },
   },
   build: {
