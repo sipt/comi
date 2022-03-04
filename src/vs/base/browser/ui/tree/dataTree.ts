@@ -24,7 +24,9 @@ export interface IDataTreeViewState {
 }
 
 export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | null, TFilterData, T | null> {
-  protected override model!: ObjectTreeModel<T, TFilterData>;
+  get _model(): ObjectTreeModel<T, TFilterData> {
+    return this.model as ObjectTreeModel<T, TFilterData>;
+  }
   private input: TInput | undefined;
 
   private identityProvider: IIdentityProvider<T> | undefined;
@@ -39,6 +41,8 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
     options: IDataTreeOptions<T, TFilterData> = {}
   ) {
     super(user, container, delegate, renderers, options as IDataTreeOptions<T | null, TFilterData>);
+    console.log(this.model);
+
     this.identityProvider = options.identityProvider;
   }
 
@@ -57,7 +61,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
 
     if (!input) {
       this.nodesByIdentity.clear();
-      this.model.setChildren(null, Iterable.empty());
+      this._model.setChildren(null, Iterable.empty());
       return;
     }
 
@@ -119,7 +123,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
   }
 
   resort(element: T | TInput = this.input!, recursive = true): void {
-    this.model.resort((element === this.input ? null : element) as T, recursive);
+    this._model.resort((element === this.input ? null : element) as T, recursive);
   }
 
   // View
@@ -162,7 +166,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | nu
       };
     }
 
-    this.model.setChildren((element === this.input ? null : element) as T, this.iterate(element, isCollapsed).elements, { onDidCreateNode, onDidDeleteNode });
+    this._model.setChildren((element === this.input ? null : element) as T, this.iterate(element, isCollapsed).elements, { onDidCreateNode, onDidDeleteNode });
   }
 
   private iterate(element: TInput | T, isCollapsed?: (el: T) => boolean | undefined): { elements: Iterable<ITreeElement<T>>; size: number } {
