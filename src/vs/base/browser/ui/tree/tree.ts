@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IDragAndDropData } from "vs/base/browser/dnd";
-import type {
-  IListDragAndDrop,
-  IListDragOverReaction,
-  IListRenderer,
-} from "vs/base/browser/ui/list/list";
+import type { IListDragAndDrop, IListDragOverReaction, IListRenderer } from "vs/base/browser/ui/list/list";
 import { ListDragOverEffect } from "vs/base/browser/ui/list/list";
 import type { Event } from "vs/base/common/event";
 
@@ -52,10 +48,7 @@ export interface ITreeFilterDataResult<TFilterData> {
  * an object composed of the visibility result as well as additional metadata
  * which gets forwarded to the renderer once the element gets rendered.
  */
-export type TreeFilterResult<TFilterData> =
-  | boolean
-  | TreeVisibility
-  | ITreeFilterDataResult<TFilterData>;
+export type TreeFilterResult<TFilterData> = boolean | TreeVisibility | ITreeFilterDataResult<TFilterData>;
 
 /**
  * A tree filter is responsible for controlling the visibility of
@@ -69,10 +62,7 @@ export interface ITreeFilter<T, TFilterData = void> {
    *
    * @param element The tree element.
    */
-  filter(
-    element: T,
-    parentVisibility: TreeVisibility
-  ): TreeFilterResult<TFilterData>;
+  filter(element: T, parentVisibility: TreeVisibility): TreeFilterResult<TFilterData>;
 }
 
 export interface ITreeSorter<T> {
@@ -112,9 +102,7 @@ export interface ITreeModel<T, TFilterData, TRef> {
   readonly rootRef: TRef;
 
   readonly onDidSplice: Event<ITreeModelSpliceEvent<T, TFilterData>>;
-  readonly onDidChangeCollapseState: Event<
-    ICollapseStateChangeEvent<T, TFilterData>
-  >;
+  readonly onDidChangeCollapseState: Event<ICollapseStateChangeEvent<T, TFilterData>>;
   readonly onDidChangeRenderNodeCount: Event<ITreeNode<T, TFilterData>>;
 
   has(location: TRef): boolean;
@@ -131,19 +119,14 @@ export interface ITreeModel<T, TFilterData, TRef> {
   isCollapsible(location: TRef): boolean;
   setCollapsible(location: TRef, collapsible?: boolean): boolean;
   isCollapsed(location: TRef): boolean;
-  setCollapsed(
-    location: TRef,
-    collapsed?: boolean,
-    recursive?: boolean
-  ): boolean;
+  setCollapsed(location: TRef, collapsed?: boolean, recursive?: boolean): boolean;
   expandTo(location: TRef): void;
 
   rerender(location: TRef): void;
   refilter(): void;
 }
 
-export interface ITreeRenderer<T, TFilterData = void, TTemplateData = void>
-  extends IListRenderer<ITreeNode<T, TFilterData>, TTemplateData> {
+export interface ITreeRenderer<T, TFilterData = void, TTemplateData = void> extends IListRenderer<ITreeNode<T, TFilterData>, TTemplateData> {
   renderTwistie?(element: T, twistieElement: HTMLElement): boolean;
   onDidChangeTwistieState?: Event<T>;
 }
@@ -224,12 +207,7 @@ export const TreeDragOverReactions = {
 };
 
 export interface ITreeDragAndDrop<T> extends IListDragAndDrop<T> {
-  onDragOver(
-    data: IDragAndDropData,
-    targetElement: T | undefined,
-    targetIndex: number | undefined,
-    originalEvent: DragEvent
-  ): boolean | ITreeDragOverReaction;
+  onDragOver(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, originalEvent: DragEvent): boolean | ITreeDragOverReaction;
 }
 
 export class TreeError extends Error {

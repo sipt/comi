@@ -157,6 +157,6 @@ var NLSLoaderPlugin;
     }());
     NLSLoaderPlugin.NLSPlugin = NLSPlugin;
     var nls = new NLSPlugin(new Environment());
-    // define('vs/nls', nls);
+    define('vs/nls', nls);
     return nls;
 })(NLSLoaderPlugin || (NLSLoaderPlugin = {}));

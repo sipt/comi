@@ -3,27 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type {
-  IIdentityProvider,
-  IListVirtualDelegate,
-} from "vs/base/browser/ui/list/list";
+import type { IIdentityProvider, IListVirtualDelegate } from "vs/base/browser/ui/list/list";
 import { AbstractTree } from "vs/base/browser/ui/tree/abstractTree";
 import type { IAbstractTreeOptions } from "vs/base/browser/ui/tree/abstractTree";
 import type { IList } from "vs/base/browser/ui/tree/indexTreeModel";
 import { ObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
-import type {
-  IDataSource,
-  ITreeElement,
-  ITreeModel,
-  ITreeNode,
-  ITreeRenderer,
-  ITreeSorter,
-} from "vs/base/browser/ui/tree/tree";
+import type { IDataSource, ITreeElement, ITreeModel, ITreeNode, ITreeRenderer, ITreeSorter } from "vs/base/browser/ui/tree/tree";
 import { TreeError } from "vs/base/browser/ui/tree/tree";
 import { Iterable } from "vs/base/common/iterator";
 
-export interface IDataTreeOptions<T, TFilterData = void>
-  extends IAbstractTreeOptions<T, TFilterData> {
+export interface IDataTreeOptions<T, TFilterData = void> extends IAbstractTreeOptions<T, TFilterData> {
   readonly sorter?: ITreeSorter<T>;
 }
 
@@ -34,11 +23,7 @@ export interface IDataTreeViewState {
   readonly scrollTop: number;
 }
 
-export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
-  T | null,
-  TFilterData,
-  T | null
-> {
+export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<T | null, TFilterData, T | null> {
   protected override model!: ObjectTreeModel<T, TFilterData>;
   private input: TInput | undefined;
 
@@ -53,13 +38,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
     private dataSource: IDataSource<TInput, T>,
     options: IDataTreeOptions<T, TFilterData> = {}
   ) {
-    super(
-      user,
-      container,
-      delegate,
-      renderers,
-      options as IDataTreeOptions<T | null, TFilterData>
-    );
+    super(user, container, delegate, renderers, options as IDataTreeOptions<T | null, TFilterData>);
     this.identityProvider = options.identityProvider;
   }
 
@@ -71,10 +50,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
   setInput(input: TInput | undefined, viewState?: IDataTreeViewState): void {
     if (viewState && !this.identityProvider) {
-      throw new TreeError(
-        this.user,
-        "Can't restore tree view state without an identity provider"
-      );
+      throw new TreeError(this.user, "Can't restore tree view state without an identity provider");
     }
 
     this.input = input;
@@ -143,10 +119,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
   }
 
   resort(element: T | TInput = this.input!, recursive = true): void {
-    this.model.resort(
-      (element === this.input ? null : element) as T,
-      recursive
-    );
+    this.model.resort((element === this.input ? null : element) as T, recursive);
   }
 
   // View
@@ -162,14 +135,8 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
   // Implementation
 
-  private _refresh(
-    element: TInput | T,
-    isCollapsed?: (el: T) => boolean | undefined,
-    onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void
-  ): void {
-    let onDidDeleteNode:
-      | ((node: ITreeNode<T, TFilterData>) => void)
-      | undefined;
+  private _refresh(element: TInput | T, isCollapsed?: (el: T) => boolean | undefined, onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void): void {
+    let onDidDeleteNode: ((node: ITreeNode<T, TFilterData>) => void) | undefined;
 
     if (this.identityProvider) {
       const insertedElements = new Set<string>();
@@ -195,25 +162,15 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
       };
     }
 
-    this.model.setChildren(
-      (element === this.input ? null : element) as T,
-      this.iterate(element, isCollapsed).elements,
-      { onDidCreateNode, onDidDeleteNode }
-    );
+    this.model.setChildren((element === this.input ? null : element) as T, this.iterate(element, isCollapsed).elements, { onDidCreateNode, onDidDeleteNode });
   }
 
-  private iterate(
-    element: TInput | T,
-    isCollapsed?: (el: T) => boolean | undefined
-  ): { elements: Iterable<ITreeElement<T>>; size: number } {
+  private iterate(element: TInput | T, isCollapsed?: (el: T) => boolean | undefined): { elements: Iterable<ITreeElement<T>>; size: number } {
     const children = [...this.dataSource.getChildren(element)];
     const elements = Iterable.map(children, (element) => {
       const { elements: children, size } = this.iterate(element, isCollapsed);
-      const collapsible = this.dataSource.hasChildren
-        ? this.dataSource.hasChildren(element)
-        : undefined;
-      const collapsed =
-        size === 0 ? undefined : isCollapsed && isCollapsed(element);
+      const collapsible = this.dataSource.hasChildren ? this.dataSource.hasChildren(element) : undefined;
+      const collapsed = size === 0 ? undefined : isCollapsed && isCollapsed(element);
 
       return { element, children, collapsible, collapsed };
     });
@@ -221,11 +178,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
     return { elements, size: children.length };
   }
 
-  protected createModel(
-    user: string,
-    view: IList<ITreeNode<T, TFilterData>>,
-    options: IDataTreeOptions<T, TFilterData>
-  ): ITreeModel<T | null, TFilterData, T | null> {
+  protected createModel(user: string, view: IList<ITreeNode<T, TFilterData>>, options: IDataTreeOptions<T, TFilterData>): ITreeModel<T | null, TFilterData, T | null> {
     return new ObjectTreeModel(user, view, options);
   }
 
@@ -233,14 +186,10 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
   getViewState(): IDataTreeViewState {
     if (!this.identityProvider) {
-      throw new TreeError(
-        this.user,
-        "Can't get tree view state without an identity provider"
-      );
+      throw new TreeError(this.user, "Can't get tree view state without an identity provider");
     }
 
-    const getId = (element: T | null) =>
-      this.identityProvider!.getId(element!).toString();
+    const getId = (element: T | null) => this.identityProvider!.getId(element!).toString();
     const focus = this.getFocus().map(getId);
     const selection = this.getSelection().map(getId);
 
