@@ -20,17 +20,10 @@ export interface CancellationToken {
    *
    * @event
    */
-  readonly onCancellationRequested: (
-    listener: (e: any) => any,
-    thisArgs?: any,
-    disposables?: IDisposable[]
-  ) => IDisposable;
+  readonly onCancellationRequested: (listener: (e: any) => any, thisArgs?: any, disposables?: IDisposable[]) => IDisposable;
 }
 
-const shortcutEvent: Event<any> = Object.freeze(function (
-  callback,
-  context?
-): IDisposable {
+const shortcutEvent: Event<any> = Object.freeze(function (callback, context?): IDisposable {
   const handle = setTimeout(callback.bind(context), 0);
   return {
     dispose() {
@@ -40,13 +33,8 @@ const shortcutEvent: Event<any> = Object.freeze(function (
 });
 
 export namespace CancellationToken {
-  export function isCancellationToken(
-    thing: unknown
-  ): thing is CancellationToken {
-    if (
-      thing === CancellationToken.None ||
-      thing === CancellationToken.Cancelled
-    ) {
+  export function isCancellationToken(thing: unknown): thing is CancellationToken {
+    if (thing === CancellationToken.None || thing === CancellationToken.Cancelled) {
       return true;
     }
     if (thing instanceof MutableToken) {
@@ -55,11 +43,7 @@ export namespace CancellationToken {
     if (!thing || typeof thing !== "object") {
       return false;
     }
-    return (
-      typeof (thing as CancellationToken).isCancellationRequested ===
-        "boolean" &&
-      typeof (thing as CancellationToken).onCancellationRequested === "function"
-    );
+    return typeof (thing as CancellationToken).isCancellationRequested === "boolean" && typeof (thing as CancellationToken).onCancellationRequested === "function";
   }
 
   export const None: CancellationToken = Object.freeze({
@@ -114,8 +98,7 @@ export class CancellationTokenSource {
   private _parentListener?: IDisposable = undefined;
 
   constructor(parent?: CancellationToken) {
-    this._parentListener =
-      parent && parent.onCancellationRequested(this.cancel, this);
+    this._parentListener = parent && parent.onCancellationRequested(this.cancel, this);
   }
 
   get token(): CancellationToken {

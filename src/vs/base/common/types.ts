@@ -23,9 +23,7 @@ export function isString(str: unknown): str is string {
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a string.
  */
 export function isStringArray(value: unknown): value is string[] {
-  return (
-    Array.isArray(value) && (<unknown[]>value).every((elem) => isString(elem))
-  );
+  return Array.isArray(value) && (<unknown[]>value).every((elem) => isString(elem));
 }
 
 /**
@@ -37,13 +35,7 @@ export function isObject(obj: unknown): obj is Object {
   // The method can't do a type cast since there are type (like strings) which
   // are subclasses of any put not positvely matched by the function. Hence type
   // narrowing results in wrong results.
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    !Array.isArray(obj) &&
-    !(obj instanceof RegExp) &&
-    !(obj instanceof Date)
-  );
+  return typeof obj === "object" && obj !== null && !Array.isArray(obj) && !(obj instanceof RegExp) && !(obj instanceof Date);
 }
 
 /**
@@ -89,14 +81,9 @@ export function isUndefinedOrNull(obj: unknown): obj is undefined | null {
   return isUndefined(obj) || obj === null;
 }
 
-export function assertType(
-  condition: unknown,
-  type?: string
-): asserts condition {
+export function assertType(condition: unknown, type?: string): asserts condition {
   if (!condition) {
-    throw new Error(
-      type ? `Unexpected type, expected '${type}'` : "Unexpected type"
-    );
+    throw new Error(type ? `Unexpected type, expected '${type}'` : "Unexpected type");
   }
 }
 
@@ -114,33 +101,17 @@ export function assertIsDefined<T>(arg: T | null | undefined): T {
 /**
  * Asserts that each argument passed in is neither undefined nor null.
  */
-export function assertAllDefined<T1, T2>(
-  t1: T1 | null | undefined,
-  t2: T2 | null | undefined
-): [T1, T2];
-export function assertAllDefined<T1, T2, T3>(
-  t1: T1 | null | undefined,
-  t2: T2 | null | undefined,
-  t3: T3 | null | undefined
-): [T1, T2, T3];
-export function assertAllDefined<T1, T2, T3, T4>(
-  t1: T1 | null | undefined,
-  t2: T2 | null | undefined,
-  t3: T3 | null | undefined,
-  t4: T4 | null | undefined
-): [T1, T2, T3, T4];
-export function assertAllDefined(
-  ...args: (unknown | null | undefined)[]
-): unknown[] {
+export function assertAllDefined<T1, T2>(t1: T1 | null | undefined, t2: T2 | null | undefined): [T1, T2];
+export function assertAllDefined<T1, T2, T3>(t1: T1 | null | undefined, t2: T2 | null | undefined, t3: T3 | null | undefined): [T1, T2, T3];
+export function assertAllDefined<T1, T2, T3, T4>(t1: T1 | null | undefined, t2: T2 | null | undefined, t3: T3 | null | undefined, t4: T4 | null | undefined): [T1, T2, T3, T4];
+export function assertAllDefined(...args: (unknown | null | undefined)[]): unknown[] {
   const result = [];
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
     if (isUndefinedOrNull(arg)) {
-      throw new Error(
-        `Assertion Failed: argument at index ${i} is undefined or null`
-      );
+      throw new Error(`Assertion Failed: argument at index ${i} is undefined or null`);
     }
 
     result.push(arg);
@@ -184,25 +155,17 @@ export function areFunctions(...objects: unknown[]): boolean {
 
 export type TypeConstraint = string | Function;
 
-export function validateConstraints(
-  args: unknown[],
-  constraints: Array<TypeConstraint | undefined>
-): void {
+export function validateConstraints(args: unknown[], constraints: Array<TypeConstraint | undefined>): void {
   const len = Math.min(args.length, constraints.length);
   for (let i = 0; i < len; i++) {
     validateConstraint(args[i], constraints[i]);
   }
 }
 
-export function validateConstraint(
-  arg: unknown,
-  constraint: TypeConstraint | undefined
-): void {
+export function validateConstraint(arg: unknown, constraint: TypeConstraint | undefined): void {
   if (isString(constraint)) {
     if (typeof arg !== constraint) {
-      throw new Error(
-        `argument does not match constraint: typeof ${constraint}`
-      );
+      throw new Error(`argument does not match constraint: typeof ${constraint}`);
     }
   } else if (isFunction(constraint)) {
     try {
@@ -218,9 +181,7 @@ export function validateConstraint(
     if (constraint.length === 1 && constraint.call(undefined, arg) === true) {
       return;
     }
-    throw new Error(
-      `argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`
-    );
+    throw new Error(`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`);
   }
 }
 
@@ -244,10 +205,7 @@ export function getAllMethodNames(obj: object): string[] {
   return methods;
 }
 
-export function createProxyObject<T extends object>(
-  methodNames: string[],
-  invoke: (method: string, args: unknown[]) => unknown
-): T {
+export function createProxyObject<T extends object>(methodNames: string[], invoke: (method: string, args: unknown[]) => unknown): T {
   const createProxyMethod = (method: string): (() => unknown) => {
     return function () {
       const args = Array.prototype.slice.call(arguments, 0);
@@ -276,27 +234,18 @@ export function withUndefinedAsNull<T>(x: T | undefined): T | null {
   return typeof x === "undefined" ? null : x;
 }
 
-type AddFirstParameterToFunction<T, TargetFunctionsReturnType, FirstParameter> =
-  T extends (...args: any[]) => TargetFunctionsReturnType
-    ? // Function: add param to function
-      (firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T>
-    : // Else: just leave as is
-      T;
+type AddFirstParameterToFunction<T, TargetFunctionsReturnType, FirstParameter> = T extends (...args: any[]) => TargetFunctionsReturnType
+  ? // Function: add param to function
+    (firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T>
+  : // Else: just leave as is
+    T;
 
 /**
  * Allows to add a first parameter to functions of a type.
  */
-export type AddFirstParameterToFunctions<
-  Target,
-  TargetFunctionsReturnType,
-  FirstParameter
-> = {
+export type AddFirstParameterToFunctions<Target, TargetFunctionsReturnType, FirstParameter> = {
   // For every property
-  [K in keyof Target]: AddFirstParameterToFunction<
-    Target[K],
-    TargetFunctionsReturnType,
-    FirstParameter
-  >;
+  [K in keyof Target]: AddFirstParameterToFunction<Target[K], TargetFunctionsReturnType, FirstParameter>;
 };
 
 /**
@@ -306,42 +255,6 @@ export type UriDto<T> = {
   [K in keyof T]: T[K] extends URI ? UriComponents : UriDto<T[K]>;
 };
 
-/**
- * Mapped-type that replaces all occurrences of URI with UriComponents and
- * drops all functions.
- */
-export type Dto<T> = T extends { toJSON(): infer U }
-  ? U
-  : T extends object
-  ? { [k in keyof T]: Dto<T[k]> }
-  : T;
-
-export function NotImplementedProxy<T>(name: string): { new (): T } {
-  return <any>class {
-    constructor() {
-      return new Proxy(
-        {},
-        {
-          get(target: any, prop: PropertyKey) {
-            if (target[prop]) {
-              return target[prop];
-            }
-            throw new Error(`Not Implemented: ${name}->${String(prop)}`);
-          },
-        }
-      );
-    }
-  };
-}
-
-export function assertNever(value: never, message = "Unreachable") {
+export function assertNever(value: never, message = "Unreachable"): never {
   throw new Error(message);
-}
-
-export function isPromise<T>(obj: unknown): obj is Promise<T> {
-  return (
-    !!obj &&
-    typeof (obj as Promise<T>).then === "function" &&
-    typeof (obj as Promise<T>).catch === "function"
-  );
 }

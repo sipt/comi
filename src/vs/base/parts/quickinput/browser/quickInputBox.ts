@@ -3,123 +3,126 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
-import { IInputBoxStyles, InputBox, IRange, MessageType } from "vs/base/browser/ui/inputbox/inputBox";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import Severity from "vs/base/common/severity";
-import "./media/quickInput.css";
+import * as dom from 'vs/base/browser/dom';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
+import { IInputBoxStyles, InputBox, IRange, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import Severity from 'vs/base/common/severity';
+import 'vs/css!./media/quickInput';
 
 const $ = dom.$;
 
 export class QuickInputBox extends Disposable {
-  private container: HTMLElement;
-  private inputBox: InputBox;
 
-  constructor(private parent: HTMLElement) {
-    super();
-    this.container = dom.append(this.parent, $(".quick-input-box"));
-    this.inputBox = this._register(new InputBox(this.container, undefined));
-  }
+	private container: HTMLElement;
+	private inputBox: InputBox;
 
-  onKeyDown = (handler: (event: StandardKeyboardEvent) => void): IDisposable => {
-    return dom.addDisposableListener(this.inputBox.inputElement, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-      handler(new StandardKeyboardEvent(e));
-    });
-  };
+	constructor(
+		private parent: HTMLElement
+	) {
+		super();
+		this.container = dom.append(this.parent, $('.quick-input-box'));
+		this.inputBox = this._register(new InputBox(this.container, undefined));
+	}
 
-  onMouseDown = (handler: (event: StandardMouseEvent) => void): IDisposable => {
-    return dom.addDisposableListener(this.inputBox.inputElement, dom.EventType.MOUSE_DOWN, (e: MouseEvent) => {
-      handler(new StandardMouseEvent(e));
-    });
-  };
+	onKeyDown = (handler: (event: StandardKeyboardEvent) => void): IDisposable => {
+		return dom.addDisposableListener(this.inputBox.inputElement, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			handler(new StandardKeyboardEvent(e));
+		});
+	};
 
-  onDidChange = (handler: (event: string) => void): IDisposable => {
-    return this.inputBox.onDidChange(handler);
-  };
+	onMouseDown = (handler: (event: StandardMouseEvent) => void): IDisposable => {
+		return dom.addDisposableListener(this.inputBox.inputElement, dom.EventType.MOUSE_DOWN, (e: MouseEvent) => {
+			handler(new StandardMouseEvent(e));
+		});
+	};
 
-  get value() {
-    return this.inputBox.value;
-  }
+	onDidChange = (handler: (event: string) => void): IDisposable => {
+		return this.inputBox.onDidChange(handler);
+	};
 
-  set value(value: string) {
-    this.inputBox.value = value;
-  }
+	get value() {
+		return this.inputBox.value;
+	}
 
-  select(range: IRange | null = null): void {
-    this.inputBox.select(range);
-  }
+	set value(value: string) {
+		this.inputBox.value = value;
+	}
 
-  isSelectionAtEnd(): boolean {
-    return this.inputBox.isSelectionAtEnd();
-  }
+	select(range: IRange | null = null): void {
+		this.inputBox.select(range);
+	}
 
-  setPlaceholder(placeholder: string): void {
-    this.inputBox.setPlaceHolder(placeholder);
-  }
+	isSelectionAtEnd(): boolean {
+		return this.inputBox.isSelectionAtEnd();
+	}
 
-  get placeholder() {
-    return this.inputBox.inputElement.getAttribute("placeholder") || "";
-  }
+	setPlaceholder(placeholder: string): void {
+		this.inputBox.setPlaceHolder(placeholder);
+	}
 
-  set placeholder(placeholder: string) {
-    this.inputBox.setPlaceHolder(placeholder);
-  }
+	get placeholder() {
+		return this.inputBox.inputElement.getAttribute('placeholder') || '';
+	}
 
-  get ariaLabel() {
-    return this.inputBox.getAriaLabel();
-  }
+	set placeholder(placeholder: string) {
+		this.inputBox.setPlaceHolder(placeholder);
+	}
 
-  set ariaLabel(ariaLabel: string) {
-    this.inputBox.setAriaLabel(ariaLabel);
-  }
+	get ariaLabel() {
+		return this.inputBox.getAriaLabel();
+	}
 
-  get password() {
-    return this.inputBox.inputElement.type === "password";
-  }
+	set ariaLabel(ariaLabel: string) {
+		this.inputBox.setAriaLabel(ariaLabel);
+	}
 
-  set password(password: boolean) {
-    this.inputBox.inputElement.type = password ? "password" : "text";
-  }
+	get password() {
+		return this.inputBox.inputElement.type === 'password';
+	}
 
-  set enabled(enabled: boolean) {
-    this.inputBox.setEnabled(enabled);
-  }
+	set password(password: boolean) {
+		this.inputBox.inputElement.type = password ? 'password' : 'text';
+	}
 
-  hasFocus(): boolean {
-    return this.inputBox.hasFocus();
-  }
+	set enabled(enabled: boolean) {
+		this.inputBox.setEnabled(enabled);
+	}
 
-  setAttribute(name: string, value: string): void {
-    this.inputBox.inputElement.setAttribute(name, value);
-  }
+	hasFocus(): boolean {
+		return this.inputBox.hasFocus();
+	}
 
-  removeAttribute(name: string): void {
-    this.inputBox.inputElement.removeAttribute(name);
-  }
+	setAttribute(name: string, value: string): void {
+		this.inputBox.inputElement.setAttribute(name, value);
+	}
 
-  showDecoration(decoration: Severity): void {
-    if (decoration === Severity.Ignore) {
-      this.inputBox.hideMessage();
-    } else {
-      this.inputBox.showMessage({ type: decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR, content: "" });
-    }
-  }
+	removeAttribute(name: string): void {
+		this.inputBox.inputElement.removeAttribute(name);
+	}
 
-  stylesForType(decoration: Severity) {
-    return this.inputBox.stylesForType(decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR);
-  }
+	showDecoration(decoration: Severity): void {
+		if (decoration === Severity.Ignore) {
+			this.inputBox.hideMessage();
+		} else {
+			this.inputBox.showMessage({ type: decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR, content: '' });
+		}
+	}
 
-  setFocus(): void {
-    this.inputBox.focus();
-  }
+	stylesForType(decoration: Severity) {
+		return this.inputBox.stylesForType(decoration === Severity.Info ? MessageType.INFO : decoration === Severity.Warning ? MessageType.WARNING : MessageType.ERROR);
+	}
 
-  layout(): void {
-    this.inputBox.layout();
-  }
+	setFocus(): void {
+		this.inputBox.focus();
+	}
 
-  style(styles: IInputBoxStyles): void {
-    this.inputBox.style(styles);
-  }
+	layout(): void {
+		this.inputBox.layout();
+	}
+
+	style(styles: IInputBoxStyles): void {
+		this.inputBox.style(styles);
+	}
 }

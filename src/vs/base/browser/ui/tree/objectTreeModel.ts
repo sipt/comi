@@ -4,10 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IIdentityProvider } from "vs/base/browser/ui/list/list";
-import type { IIndexTreeModelOptions, IIndexTreeModelSpliceOptions, IList } from "vs/base/browser/ui/tree/indexTreeModel";
-import { IndexTreeModel } from "vs/base/browser/ui/tree/indexTreeModel";
-import type { ICollapseStateChangeEvent, ITreeElement, ITreeModel, ITreeModelSpliceEvent, ITreeNode, ITreeSorter } from "vs/base/browser/ui/tree/tree";
-import { TreeError } from "vs/base/browser/ui/tree/tree";
+import { type IIndexTreeModelOptions, type IIndexTreeModelSpliceOptions, type IList, IndexTreeModel } from "vs/base/browser/ui/tree/indexTreeModel";
+import { type ICollapseStateChangeEvent, type ITreeElement, type ITreeModel, type ITreeModelSpliceEvent, type ITreeNode, type ITreeSorter, TreeError } from "vs/base/browser/ui/tree/tree";
 import type { Event } from "vs/base/common/event";
 import { Iterable } from "vs/base/common/iterator";
 
@@ -109,11 +107,7 @@ export class ObjectTreeModel<T extends NonNullable<any>, TFilterData extends Non
       options.onDidDeleteNode?.(tnode);
     };
 
-    this.model.splice([...location, 0], Number.MAX_VALUE, children, {
-      ...options,
-      onDidCreateNode,
-      onDidDeleteNode,
-    });
+    this.model.splice([...location, 0], Number.MAX_VALUE, children, { ...options, onDidCreateNode, onDidDeleteNode });
   }
 
   private preserveCollapseState(elements: Iterable<ITreeElement<T>> = Iterable.empty()): Iterable<ITreeElement<T>> {

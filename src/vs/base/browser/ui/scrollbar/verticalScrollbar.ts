@@ -4,17 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { StandardWheelEvent } from "vs/base/browser/mouseEvent";
-import { AbstractScrollbar } from "vs/base/browser/ui/scrollbar/abstractScrollbar";
-import type { ISimplifiedMouseEvent, ScrollbarHost } from "vs/base/browser/ui/scrollbar/abstractScrollbar";
+import { AbstractScrollbar, type ISimplifiedPointerEvent, type ScrollbarHost } from "vs/base/browser/ui/scrollbar/abstractScrollbar";
 import type { ScrollableElementResolvedOptions } from "vs/base/browser/ui/scrollbar/scrollableElementOptions";
 import { ARROW_IMG_SIZE } from "vs/base/browser/ui/scrollbar/scrollbarArrow";
 import { ScrollbarState } from "vs/base/browser/ui/scrollbar/scrollbarState";
-import { Codicon, registerCodicon } from "vs/base/common/codicons";
-import type { INewScrollPosition, ScrollEvent } from "vs/base/common/scrollable";
-import { Scrollable, ScrollbarVisibility } from "vs/base/common/scrollable";
-
-const scrollbarButtonUpIcon = registerCodicon("scrollbar-button-up", Codicon.triangleUp);
-const scrollbarButtonDownIcon = registerCodicon("scrollbar-button-down", Codicon.triangleDown);
+import { Codicon } from "vs/base/common/codicons";
+import { type INewScrollPosition, Scrollable, ScrollbarVisibility, type ScrollEvent } from "vs/base/common/scrollable";
 
 export class VerticalScrollbar extends AbstractScrollbar {
   constructor(scrollable: Scrollable, options: ScrollableElementResolvedOptions, host: ScrollbarHost) {
@@ -44,7 +39,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 
       this._createArrow({
         className: "scra",
-        icon: scrollbarButtonUpIcon,
+        icon: Codicon.scrollbarButtonUp,
         top: arrowDelta,
         left: scrollbarDelta,
         bottom: undefined,
@@ -56,7 +51,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 
       this._createArrow({
         className: "scra",
-        icon: scrollbarButtonDownIcon,
+        icon: Codicon.scrollbarButtonDown,
         top: undefined,
         left: scrollbarDelta,
         bottom: arrowDelta,
@@ -89,16 +84,16 @@ export class VerticalScrollbar extends AbstractScrollbar {
     return this._shouldRender;
   }
 
-  protected _mouseDownRelativePosition(offsetX: number, offsetY: number): number {
+  protected _pointerDownRelativePosition(offsetX: number, offsetY: number): number {
     return offsetY;
   }
 
-  protected _sliderMousePosition(e: ISimplifiedMouseEvent): number {
-    return e.posy;
+  protected _sliderPointerPosition(e: ISimplifiedPointerEvent): number {
+    return e.pageY;
   }
 
-  protected _sliderOrthogonalMousePosition(e: ISimplifiedMouseEvent): number {
-    return e.posx;
+  protected _sliderOrthogonalPointerPosition(e: ISimplifiedPointerEvent): number {
+    return e.pageX;
   }
 
   protected _updateScrollbarSize(size: number): void {

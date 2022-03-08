@@ -6,8 +6,7 @@
 import type { IDragAndDropData } from "vs/base/browser/dnd";
 import { createStyleSheet } from "vs/base/browser/dom";
 import { DomEmitter, stopEvent } from "vs/base/browser/event";
-import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import type { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { type IKeyboardEvent, StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
 import { Gesture } from "vs/base/browser/touch";
 import { alert } from "vs/base/browser/ui/aria/aria";
 import { CombinedSpliceable } from "vs/base/browser/ui/list/splice";
@@ -19,8 +18,7 @@ import { memoize } from "vs/base/common/decorators";
 import { Emitter, Event, EventBufferer } from "vs/base/common/event";
 import { matchesPrefix } from "vs/base/common/filters";
 import { KeyCode } from "vs/base/common/keyCodes";
-import { DisposableStore, dispose } from "vs/base/common/lifecycle";
-import type { IDisposable } from "vs/base/common/lifecycle";
+import { DisposableStore, dispose, type IDisposable } from "vs/base/common/lifecycle";
 import { clamp } from "vs/base/common/numbers";
 import { mixin } from "vs/base/common/objects";
 import * as platform from "vs/base/common/platform";
@@ -28,24 +26,23 @@ import type { ScrollbarVisibility, ScrollEvent } from "vs/base/common/scrollable
 import type { ISpliceable } from "vs/base/common/sequence";
 import type { IThemable } from "vs/base/common/styler";
 import { isNumber } from "vs/base/common/types";
-import "./list.css";
-import type {
-  IIdentityProvider,
-  IKeyboardNavigationDelegate,
-  IKeyboardNavigationLabelProvider,
-  IListContextMenuEvent,
-  IListDragAndDrop,
-  IListDragOverReaction,
-  IListEvent,
-  IListGestureEvent,
-  IListMouseEvent,
-  IListRenderer,
-  IListTouchEvent,
-  IListVirtualDelegate,
+import "vs/css!./list";
+import {
+  type IIdentityProvider,
+  type IKeyboardNavigationDelegate,
+  type IKeyboardNavigationLabelProvider,
+  type IListContextMenuEvent,
+  type IListDragAndDrop,
+  type IListDragOverReaction,
+  type IListEvent,
+  type IListGestureEvent,
+  type IListMouseEvent,
+  type IListRenderer,
+  type IListTouchEvent,
+  type IListVirtualDelegate,
+  ListError,
 } from "./list";
-import { ListError } from "./list";
-import type { IListViewAccessibilityProvider, IListViewDragAndDrop, IListViewOptions, IListViewOptionsUpdate } from "./listView";
-import { ListView } from "./listView";
+import { type IListViewAccessibilityProvider, type IListViewDragAndDrop, type IListViewOptions, type IListViewOptionsUpdate, ListView } from "./listView";
 
 interface ITraitChangeEvent {
   indexes: number[];
@@ -65,7 +62,7 @@ class TraitRenderer<T> implements IListRenderer<T, ITraitTemplateData> {
   constructor(private trait: Trait<T>) {}
 
   get templateId(): string {
-    return `template:${this.trait.trait}`;
+    return `template:${this.trait.name}`;
   }
 
   renderTemplate(container: HTMLElement): ITraitTemplateData {
@@ -131,7 +128,7 @@ class Trait<T> implements ISpliceable<boolean>, IDisposable {
   private readonly _onChange = new Emitter<ITraitChangeEvent>();
   readonly onChange: Event<ITraitChangeEvent> = this._onChange.event;
 
-  get trait(): string {
+  get name(): string {
     return this._trait;
   }
 
@@ -292,7 +289,7 @@ class KeyboardController<T> implements IDisposable {
     this.onKeyDown.filter((e) => e.keyCode === KeyCode.Escape).on(this.onEscape, this, this.disposables);
 
     if (options.multipleSelectionSupport !== false) {
-      this.onKeyDown.filter((e) => (platform.isMacintosh ? e.metaKey : e.ctrlKey) && e.keyCode === KeyCode.KEY_A).on(this.onCtrlA, this, this.multipleSelectionDisposables);
+      this.onKeyDown.filter((e) => (platform.isMacintosh ? e.metaKey : e.ctrlKey) && e.keyCode === KeyCode.KeyA).on(this.onCtrlA, this, this.multipleSelectionDisposables);
     }
   }
 
@@ -301,7 +298,7 @@ class KeyboardController<T> implements IDisposable {
       this.multipleSelectionDisposables.clear();
 
       if (optionsUpdate.multipleSelectionSupport) {
-        this.onKeyDown.filter((e) => (platform.isMacintosh ? e.metaKey : e.ctrlKey) && e.keyCode === KeyCode.KEY_A).on(this.onCtrlA, this, this.multipleSelectionDisposables);
+        this.onKeyDown.filter((e) => (platform.isMacintosh ? e.metaKey : e.ctrlKey) && e.keyCode === KeyCode.KeyA).on(this.onCtrlA, this, this.multipleSelectionDisposables);
       }
     }
   }
@@ -388,10 +385,10 @@ export const DefaultKeyboardNavigationDelegate = new (class implements IKeyboard
     }
 
     return (
-      (event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z) ||
-      (event.keyCode >= KeyCode.KEY_0 && event.keyCode <= KeyCode.KEY_9) ||
-      (event.keyCode >= KeyCode.NUMPAD_0 && event.keyCode <= KeyCode.NUMPAD_9) ||
-      (event.keyCode >= KeyCode.US_SEMICOLON && event.keyCode <= KeyCode.US_QUOTE)
+      (event.keyCode >= KeyCode.KeyA && event.keyCode <= KeyCode.KeyZ) ||
+      (event.keyCode >= KeyCode.Digit0 && event.keyCode <= KeyCode.Digit9) ||
+      (event.keyCode >= KeyCode.Numpad0 && event.keyCode <= KeyCode.Numpad9) ||
+      (event.keyCode >= KeyCode.Semicolon && event.keyCode <= KeyCode.Quote)
     );
   }
 })();
@@ -439,10 +436,7 @@ class TypeLabelController<T> implements IDisposable {
       .filter(() => this.automaticKeyboardNavigation || this.triggered)
       .map((event) => new StandardKeyboardEvent(event))
       .filter((e) => this.delegate.mightProducePrintableCharacter(e))
-      .forEach((e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      })
+      .forEach((e) => e.preventDefault())
       .map((event) => event.browserEvent.key).event;
 
     const onClear = Event.debounce<string, null>(onChar, () => null, 800);
@@ -854,6 +848,7 @@ export class DefaultStyleController implements IStyleController {
       content.push(`
 				.monaco-drag-image,
 				.monaco-list${suffix}:focus .monaco-list-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }
+				.monaco-workbench.context-menu-visible .monaco-list${suffix}.last-focused .monaco-list-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }
 			`);
     }
 
@@ -895,6 +890,16 @@ export class DefaultStyleController implements IStyleController {
 				.monaco-table:hover > .monaco-split-view2 .monaco-sash.vertical::before {
 					border-color: ${styles.tableColumnsBorder};
 			}`);
+    }
+
+    if (styles.tableOddRowsBackgroundColor) {
+      content.push(`
+				.monaco-table .monaco-list-row[data-parity=odd]:not(.focused):not(.selected):not(:hover) .monaco-table-tr,
+				.monaco-table .monaco-list:not(:focus) .monaco-list-row[data-parity=odd].focused:not(.selected):not(:hover) .monaco-table-tr,
+				.monaco-table .monaco-list:not(.focused) .monaco-list-row[data-parity=odd].focused:not(.selected):not(:hover) .monaco-table-tr {
+					background-color: ${styles.tableOddRowsBackgroundColor};
+				}
+			`);
     }
 
     this.styleElement.textContent = content.join("\n");
@@ -959,6 +964,7 @@ export interface IListStyles {
   listMatchesShadow?: Color;
   treeIndentGuidesStroke?: Color;
   tableColumnsBorder?: Color;
+  tableOddRowsBackgroundColor?: Color;
 }
 
 const defaultStyles: IListStyles = {
@@ -974,6 +980,7 @@ const defaultStyles: IListStyles = {
   listDropBackground: Color.fromHex("#383B3D"),
   treeIndentGuidesStroke: Color.fromHex("#a9a9a9"),
   tableColumnsBorder: Color.fromHex("#cccccc").transparent(0.2),
+  tableOddRowsBackgroundColor: Color.fromHex("#cccccc").transparent(0.04),
 };
 
 const DefaultOptions: IListOptions<any> = {
@@ -1193,6 +1200,21 @@ class ListViewDragAndDrop<T> implements IListViewDragAndDrop<T> {
   }
 }
 
+/**
+ * The {@link List} is a virtual scrolling widget, built on top of the {@link ListView}
+ * widget.
+ *
+ * Features:
+ * - Customizable keyboard and mouse support
+ * - Element traits: focus, selection, achor
+ * - Accessibility support
+ * - Touch support
+ * - Performant template-based rendering
+ * - Horizontal scrolling
+ * - Variable element height support
+ * - Dynamic element height support
+ * - Drag-and-drop support
+ */
 export class List<T> implements ISpliceable<T>, IThemable, IDisposable {
   private focus = new Trait<T>("focused");
   private selection: Trait<T>;
@@ -1288,12 +1310,7 @@ export class List<T> implements ISpliceable<T>, IThemable, IDisposable {
 
     const fromMouse = Event.chain(this.view.onContextMenu)
       .filter((_) => !didJustPressContextMenuKey)
-      .map(({ element, index, browserEvent }) => ({
-        element,
-        index,
-        anchor: { x: browserEvent.pageX + 1, y: browserEvent.pageY },
-        browserEvent,
-      })).event;
+      .map(({ element, index, browserEvent }) => ({ element, index, anchor: { x: browserEvent.pageX + 1, y: browserEvent.pageY }, browserEvent })).event;
 
     return Event.any<IListContextMenuEvent<T>>(fromKeyDown, fromKeyUp, fromMouse);
   }
@@ -1804,11 +1821,7 @@ export class List<T> implements ISpliceable<T>, IThemable, IDisposable {
   }
 
   private toListEvent({ indexes, browserEvent }: ITraitChangeEvent) {
-    return {
-      indexes,
-      elements: indexes.map((i) => this.view.element(i)),
-      browserEvent,
-    };
+    return { indexes, elements: indexes.map((i) => this.view.element(i)), browserEvent };
   }
 
   private _onFocusChange(): void {

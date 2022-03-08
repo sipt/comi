@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from "vs/base/common/range";
-import type { IRange } from "vs/base/common/range";
+import { type IRange, Range } from "vs/base/common/range";
 
 export interface IItem {
   size: number;
@@ -19,10 +18,7 @@ export interface IRangedGroup {
  * Returns the intersection between a ranged group and a range.
  * Returns `[]` if the intersection is empty.
  */
-export function groupIntersect(
-  range: IRange,
-  groups: IRangedGroup[]
-): IRangedGroup[] {
+export function groupIntersect(range: IRange, groups: IRangedGroup[]): IRangedGroup[] {
   const result: IRangedGroup[] = [];
 
   for (let r of groups) {
@@ -98,10 +94,7 @@ export class RangeMap {
   splice(index: number, deleteCount: number, items: IItem[] = []): void {
     const diff = items.length - deleteCount;
     const before = groupIntersect({ start: 0, end: index }, this.groups);
-    const after = groupIntersect(
-      { start: index + deleteCount, end: Number.POSITIVE_INFINITY },
-      this.groups
-    ).map<IRangedGroup>((g) => ({ range: shift(g.range, diff), size: g.size }));
+    const after = groupIntersect({ start: index + deleteCount, end: Number.POSITIVE_INFINITY }, this.groups).map<IRangedGroup>((g) => ({ range: shift(g.range, diff), size: g.size }));
 
     const middle = items.map<IRangedGroup>((item, i) => ({
       range: { start: index + i, end: index + i + 1 },
@@ -109,10 +102,7 @@ export class RangeMap {
     }));
 
     this.groups = concat(before, middle, after);
-    this._size = this.groups.reduce(
-      (t, g) => t + g.size * (g.range.end - g.range.start),
-      0
-    );
+    this._size = this.groups.reduce((t, g) => t + g.size * (g.range.end - g.range.start), 0);
   }
 
   /**

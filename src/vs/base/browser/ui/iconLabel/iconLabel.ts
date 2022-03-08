@@ -3,305 +3,302 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { HighlightedLabel } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
-import { IHoverDelegate } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
-import { setupCustomHover, setupNativeHover } from "vs/base/browser/ui/iconLabel/iconLabelHover";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IMatch } from "vs/base/common/filters";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import { equals } from "vs/base/common/objects";
-import { Range } from "vs/base/common/range";
-import "./iconlabel.css";
+import * as dom from 'vs/base/browser/dom';
+import { HighlightedLabel } from 'vs/base/browser/ui/highlightedlabel/highlightedLabel';
+import { IHoverDelegate } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
+import { ITooltipMarkdownString, setupCustomHover, setupNativeHover } from 'vs/base/browser/ui/iconLabel/iconLabelHover';
+import { IMatch } from 'vs/base/common/filters';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { equals } from 'vs/base/common/objects';
+import { Range } from 'vs/base/common/range';
+import 'vs/css!./iconlabel';
 
 export interface IIconLabelCreationOptions {
-  supportHighlights?: boolean;
-  supportDescriptionHighlights?: boolean;
-  supportIcons?: boolean;
-  hoverDelegate?: IHoverDelegate;
-}
-
-export interface IIconLabelMarkdownString {
-  markdown: IMarkdownString | string | HTMLElement | undefined | ((token: CancellationToken) => Promise<IMarkdownString | string | undefined>);
-  markdownNotSupportedFallback: string | undefined;
+	supportHighlights?: boolean;
+	supportDescriptionHighlights?: boolean;
+	supportIcons?: boolean;
+	hoverDelegate?: IHoverDelegate;
 }
 
 export interface IIconLabelValueOptions {
-  title?: string | IIconLabelMarkdownString;
-  descriptionTitle?: string;
-  hideIcon?: boolean;
-  extraClasses?: string[];
-  italic?: boolean;
-  strikethrough?: boolean;
-  matches?: IMatch[];
-  labelEscapeNewLines?: boolean;
-  descriptionMatches?: IMatch[];
-  readonly separator?: string;
-  readonly domId?: string;
+	title?: string | ITooltipMarkdownString;
+	descriptionTitle?: string;
+	hideIcon?: boolean;
+	extraClasses?: string[];
+	italic?: boolean;
+	strikethrough?: boolean;
+	matches?: IMatch[];
+	labelEscapeNewLines?: boolean;
+	descriptionMatches?: IMatch[];
+	readonly separator?: string;
+	readonly domId?: string;
 }
 
 class FastLabelNode {
-  private disposed: boolean | undefined;
-  private _textContent: string | undefined;
-  private _className: string | undefined;
-  private _empty: boolean | undefined;
+	private disposed: boolean | undefined;
+	private _textContent: string | undefined;
+	private _className: string | undefined;
+	private _empty: boolean | undefined;
 
-  constructor(private _element: HTMLElement) {}
+	constructor(private _element: HTMLElement) {
+	}
 
-  get element(): HTMLElement {
-    return this._element;
-  }
+	get element(): HTMLElement {
+		return this._element;
+	}
 
-  set textContent(content: string) {
-    if (this.disposed || content === this._textContent) {
-      return;
-    }
+	set textContent(content: string) {
+		if (this.disposed || content === this._textContent) {
+			return;
+		}
 
-    this._textContent = content;
-    this._element.textContent = content;
-  }
+		this._textContent = content;
+		this._element.textContent = content;
+	}
 
-  set className(className: string) {
-    if (this.disposed || className === this._className) {
-      return;
-    }
+	set className(className: string) {
+		if (this.disposed || className === this._className) {
+			return;
+		}
 
-    this._className = className;
-    this._element.className = className;
-  }
+		this._className = className;
+		this._element.className = className;
+	}
 
-  set empty(empty: boolean) {
-    if (this.disposed || empty === this._empty) {
-      return;
-    }
+	set empty(empty: boolean) {
+		if (this.disposed || empty === this._empty) {
+			return;
+		}
 
-    this._empty = empty;
-    this._element.style.marginLeft = empty ? "0" : "";
-  }
+		this._empty = empty;
+		this._element.style.marginLeft = empty ? '0' : '';
+	}
 
-  dispose(): void {
-    this.disposed = true;
-  }
+	dispose(): void {
+		this.disposed = true;
+	}
 }
 
 export class IconLabel extends Disposable {
-  private readonly domNode: FastLabelNode;
 
-  private readonly nameNode: Label | LabelWithHighlights;
+	private readonly domNode: FastLabelNode;
 
-  private readonly descriptionContainer: FastLabelNode;
-  private descriptionNode: FastLabelNode | HighlightedLabel | undefined;
-  private readonly descriptionNodeFactory: () => FastLabelNode | HighlightedLabel;
+	private readonly nameNode: Label | LabelWithHighlights;
 
-  private readonly labelContainer: HTMLElement;
+	private readonly descriptionContainer: FastLabelNode;
+	private descriptionNode: FastLabelNode | HighlightedLabel | undefined;
+	private readonly descriptionNodeFactory: () => FastLabelNode | HighlightedLabel;
 
-  private readonly hoverDelegate: IHoverDelegate | undefined;
-  private readonly customHovers: Map<HTMLElement, IDisposable> = new Map();
+	private readonly labelContainer: HTMLElement;
 
-  constructor(container: HTMLElement, options?: IIconLabelCreationOptions) {
-    super();
+	private readonly hoverDelegate: IHoverDelegate | undefined;
+	private readonly customHovers: Map<HTMLElement, IDisposable> = new Map();
 
-    this.domNode = this._register(new FastLabelNode(dom.append(container, dom.$(".monaco-icon-label"))));
+	constructor(container: HTMLElement, options?: IIconLabelCreationOptions) {
+		super();
 
-    this.labelContainer = dom.append(this.domNode.element, dom.$(".monaco-icon-label-container"));
+		this.domNode = this._register(new FastLabelNode(dom.append(container, dom.$('.monaco-icon-label'))));
 
-    const nameContainer = dom.append(this.labelContainer, dom.$("span.monaco-icon-name-container"));
-    this.descriptionContainer = this._register(new FastLabelNode(dom.append(this.labelContainer, dom.$("span.monaco-icon-description-container"))));
+		this.labelContainer = dom.append(this.domNode.element, dom.$('.monaco-icon-label-container'));
 
-    if (options?.supportHighlights || options?.supportIcons) {
-      this.nameNode = new LabelWithHighlights(nameContainer, !!options.supportIcons);
-    } else {
-      this.nameNode = new Label(nameContainer);
-    }
+		const nameContainer = dom.append(this.labelContainer, dom.$('span.monaco-icon-name-container'));
+		this.descriptionContainer = this._register(new FastLabelNode(dom.append(this.labelContainer, dom.$('span.monaco-icon-description-container'))));
 
-    if (options?.supportDescriptionHighlights) {
-      this.descriptionNodeFactory = () => new HighlightedLabel(dom.append(this.descriptionContainer.element, dom.$("span.label-description")), !!options.supportIcons);
-    } else {
-      this.descriptionNodeFactory = () => this._register(new FastLabelNode(dom.append(this.descriptionContainer.element, dom.$("span.label-description"))));
-    }
+		if (options?.supportHighlights || options?.supportIcons) {
+			this.nameNode = new LabelWithHighlights(nameContainer, !!options.supportIcons);
+		} else {
+			this.nameNode = new Label(nameContainer);
+		}
 
-    this.hoverDelegate = options?.hoverDelegate;
-  }
+		if (options?.supportDescriptionHighlights) {
+			this.descriptionNodeFactory = () => new HighlightedLabel(dom.append(this.descriptionContainer.element, dom.$('span.label-description')), { supportIcons: !!options.supportIcons });
+		} else {
+			this.descriptionNodeFactory = () => this._register(new FastLabelNode(dom.append(this.descriptionContainer.element, dom.$('span.label-description'))));
+		}
 
-  get element(): HTMLElement {
-    return this.domNode.element;
-  }
+		this.hoverDelegate = options?.hoverDelegate;
+	}
 
-  setLabel(label: string | string[], description?: string, options?: IIconLabelValueOptions): void {
-    const classes = ["monaco-icon-label"];
-    if (options) {
-      if (options.extraClasses) {
-        classes.push(...options.extraClasses);
-      }
+	get element(): HTMLElement {
+		return this.domNode.element;
+	}
 
-      if (options.italic) {
-        classes.push("italic");
-      }
+	setLabel(label: string | string[], description?: string, options?: IIconLabelValueOptions): void {
+		const classes = ['monaco-icon-label'];
+		if (options) {
+			if (options.extraClasses) {
+				classes.push(...options.extraClasses);
+			}
 
-      if (options.strikethrough) {
-        classes.push("strikethrough");
-      }
-    }
+			if (options.italic) {
+				classes.push('italic');
+			}
 
-    this.domNode.className = classes.join(" ");
-    this.setupHover(options?.descriptionTitle ? this.labelContainer : this.element, options?.title);
+			if (options.strikethrough) {
+				classes.push('strikethrough');
+			}
+		}
 
-    this.nameNode.setLabel(label, options);
+		this.domNode.className = classes.join(' ');
+		this.setupHover(options?.descriptionTitle ? this.labelContainer : this.element, options?.title);
 
-    if (description || this.descriptionNode) {
-      if (!this.descriptionNode) {
-        this.descriptionNode = this.descriptionNodeFactory(); // description node is created lazily on demand
-      }
+		this.nameNode.setLabel(label, options);
 
-      if (this.descriptionNode instanceof HighlightedLabel) {
-        this.descriptionNode.set(description || "", options ? options.descriptionMatches : undefined);
-        this.setupHover(this.descriptionNode.element, options?.descriptionTitle);
-      } else {
-        this.descriptionNode.textContent = description || "";
-        this.setupHover(this.descriptionNode.element, options?.descriptionTitle || "");
-        this.descriptionNode.empty = !description;
-      }
-    }
-  }
+		if (description || this.descriptionNode) {
+			if (!this.descriptionNode) {
+				this.descriptionNode = this.descriptionNodeFactory(); // description node is created lazily on demand
+			}
 
-  private setupHover(htmlElement: HTMLElement, tooltip: string | IIconLabelMarkdownString | undefined): void {
-    const previousCustomHover = this.customHovers.get(htmlElement);
-    if (previousCustomHover) {
-      previousCustomHover.dispose();
-      this.customHovers.delete(htmlElement);
-    }
+			if (this.descriptionNode instanceof HighlightedLabel) {
+				this.descriptionNode.set(description || '', options ? options.descriptionMatches : undefined);
+				this.setupHover(this.descriptionNode.element, options?.descriptionTitle);
+			} else {
+				this.descriptionNode.textContent = description || '';
+				this.setupHover(this.descriptionNode.element, options?.descriptionTitle || '');
+				this.descriptionNode.empty = !description;
+			}
+		}
+	}
 
-    if (!tooltip) {
-      htmlElement.removeAttribute("title");
-      return;
-    }
+	private setupHover(htmlElement: HTMLElement, tooltip: string | ITooltipMarkdownString | undefined): void {
+		const previousCustomHover = this.customHovers.get(htmlElement);
+		if (previousCustomHover) {
+			previousCustomHover.dispose();
+			this.customHovers.delete(htmlElement);
+		}
 
-    if (!this.hoverDelegate) {
-      setupNativeHover(htmlElement, tooltip);
-    } else {
-      const hoverDisposable = setupCustomHover(this.hoverDelegate, htmlElement, tooltip);
-      if (hoverDisposable) {
-        this.customHovers.set(htmlElement, hoverDisposable);
-      }
-    }
-  }
+		if (!tooltip) {
+			htmlElement.removeAttribute('title');
+			return;
+		}
 
-  public override dispose() {
-    super.dispose();
-    for (const disposable of this.customHovers.values()) {
-      disposable.dispose();
-    }
-    this.customHovers.clear();
-  }
+		if (!this.hoverDelegate) {
+			setupNativeHover(htmlElement, tooltip);
+		} else {
+			const hoverDisposable = setupCustomHover(this.hoverDelegate, htmlElement, tooltip);
+			if (hoverDisposable) {
+				this.customHovers.set(htmlElement, hoverDisposable);
+			}
+		}
+	}
+
+	public override dispose() {
+		super.dispose();
+		for (const disposable of this.customHovers.values()) {
+			disposable.dispose();
+		}
+		this.customHovers.clear();
+	}
 }
 
 class Label {
-  private label: string | string[] | undefined = undefined;
-  private singleLabel: HTMLElement | undefined = undefined;
-  private options: IIconLabelValueOptions | undefined;
 
-  constructor(private container: HTMLElement) {}
+	private label: string | string[] | undefined = undefined;
+	private singleLabel: HTMLElement | undefined = undefined;
+	private options: IIconLabelValueOptions | undefined;
 
-  setLabel(label: string | string[], options?: IIconLabelValueOptions): void {
-    if (this.label === label && equals(this.options, options)) {
-      return;
-    }
+	constructor(private container: HTMLElement) { }
 
-    this.label = label;
-    this.options = options;
+	setLabel(label: string | string[], options?: IIconLabelValueOptions): void {
+		if (this.label === label && equals(this.options, options)) {
+			return;
+		}
 
-    if (typeof label === "string") {
-      if (!this.singleLabel) {
-        this.container.innerText = "";
-        this.container.classList.remove("multiple");
-        this.singleLabel = dom.append(this.container, dom.$("a.label-name", { id: options?.domId }));
-      }
+		this.label = label;
+		this.options = options;
 
-      this.singleLabel.textContent = label;
-    } else {
-      this.container.innerText = "";
-      this.container.classList.add("multiple");
-      this.singleLabel = undefined;
+		if (typeof label === 'string') {
+			if (!this.singleLabel) {
+				this.container.innerText = '';
+				this.container.classList.remove('multiple');
+				this.singleLabel = dom.append(this.container, dom.$('a.label-name', { id: options?.domId }));
+			}
 
-      for (let i = 0; i < label.length; i++) {
-        const l = label[i];
-        const id = options?.domId && `${options?.domId}_${i}`;
+			this.singleLabel.textContent = label;
+		} else {
+			this.container.innerText = '';
+			this.container.classList.add('multiple');
+			this.singleLabel = undefined;
 
-        dom.append(this.container, dom.$("a.label-name", { id, "data-icon-label-count": label.length, "data-icon-label-index": i, role: "treeitem" }, l));
+			for (let i = 0; i < label.length; i++) {
+				const l = label[i];
+				const id = options?.domId && `${options?.domId}_${i}`;
 
-        if (i < label.length - 1) {
-          dom.append(this.container, dom.$("span.label-separator", undefined, options?.separator || "/"));
-        }
-      }
-    }
-  }
+				dom.append(this.container, dom.$('a.label-name', { id, 'data-icon-label-count': label.length, 'data-icon-label-index': i, 'role': 'treeitem' }, l));
+
+				if (i < label.length - 1) {
+					dom.append(this.container, dom.$('span.label-separator', undefined, options?.separator || '/'));
+				}
+			}
+		}
+	}
 }
 
 function splitMatches(labels: string[], separator: string, matches: IMatch[] | undefined): IMatch[][] | undefined {
-  if (!matches) {
-    return undefined;
-  }
+	if (!matches) {
+		return undefined;
+	}
 
-  let labelStart = 0;
+	let labelStart = 0;
 
-  return labels.map((label) => {
-    const labelRange = { start: labelStart, end: labelStart + label.length };
+	return labels.map(label => {
+		const labelRange = { start: labelStart, end: labelStart + label.length };
 
-    const result = matches
-      .map((match) => Range.intersect(labelRange, match))
-      .filter((range) => !Range.isEmpty(range))
-      .map(({ start, end }) => ({ start: start - labelStart, end: end - labelStart }));
+		const result = matches
+			.map(match => Range.intersect(labelRange, match))
+			.filter(range => !Range.isEmpty(range))
+			.map(({ start, end }) => ({ start: start - labelStart, end: end - labelStart }));
 
-    labelStart = labelRange.end + separator.length;
-    return result;
-  });
+		labelStart = labelRange.end + separator.length;
+		return result;
+	});
 }
 
 class LabelWithHighlights {
-  private label: string | string[] | undefined = undefined;
-  private singleLabel: HighlightedLabel | undefined = undefined;
-  private options: IIconLabelValueOptions | undefined;
 
-  constructor(private container: HTMLElement, private supportIcons: boolean) {}
+	private label: string | string[] | undefined = undefined;
+	private singleLabel: HighlightedLabel | undefined = undefined;
+	private options: IIconLabelValueOptions | undefined;
 
-  setLabel(label: string | string[], options?: IIconLabelValueOptions): void {
-    if (this.label === label && equals(this.options, options)) {
-      return;
-    }
+	constructor(private container: HTMLElement, private supportIcons: boolean) { }
 
-    this.label = label;
-    this.options = options;
+	setLabel(label: string | string[], options?: IIconLabelValueOptions): void {
+		if (this.label === label && equals(this.options, options)) {
+			return;
+		}
 
-    if (typeof label === "string") {
-      if (!this.singleLabel) {
-        this.container.innerText = "";
-        this.container.classList.remove("multiple");
-        this.singleLabel = new HighlightedLabel(dom.append(this.container, dom.$("a.label-name", { id: options?.domId })), this.supportIcons);
-      }
+		this.label = label;
+		this.options = options;
 
-      this.singleLabel.set(label, options?.matches, undefined, options?.labelEscapeNewLines);
-    } else {
-      this.container.innerText = "";
-      this.container.classList.add("multiple");
-      this.singleLabel = undefined;
+		if (typeof label === 'string') {
+			if (!this.singleLabel) {
+				this.container.innerText = '';
+				this.container.classList.remove('multiple');
+				this.singleLabel = new HighlightedLabel(dom.append(this.container, dom.$('a.label-name', { id: options?.domId })), { supportIcons: this.supportIcons });
+			}
 
-      const separator = options?.separator || "/";
-      const matches = splitMatches(label, separator, options?.matches);
+			this.singleLabel.set(label, options?.matches, undefined, options?.labelEscapeNewLines);
+		} else {
+			this.container.innerText = '';
+			this.container.classList.add('multiple');
+			this.singleLabel = undefined;
 
-      for (let i = 0; i < label.length; i++) {
-        const l = label[i];
-        const m = matches ? matches[i] : undefined;
-        const id = options?.domId && `${options?.domId}_${i}`;
+			const separator = options?.separator || '/';
+			const matches = splitMatches(label, separator, options?.matches);
 
-        const name = dom.$("a.label-name", { id, "data-icon-label-count": label.length, "data-icon-label-index": i, role: "treeitem" });
-        const highlightedLabel = new HighlightedLabel(dom.append(this.container, name), this.supportIcons);
-        highlightedLabel.set(l, m, undefined, options?.labelEscapeNewLines);
+			for (let i = 0; i < label.length; i++) {
+				const l = label[i];
+				const m = matches ? matches[i] : undefined;
+				const id = options?.domId && `${options?.domId}_${i}`;
 
-        if (i < label.length - 1) {
-          dom.append(name, dom.$("span.label-separator", undefined, separator));
-        }
-      }
-    }
-  }
+				const name = dom.$('a.label-name', { id, 'data-icon-label-count': label.length, 'data-icon-label-index': i, 'role': 'treeitem' });
+				const highlightedLabel = new HighlightedLabel(dom.append(this.container, name), { supportIcons: this.supportIcons });
+				highlightedLabel.set(l, m, undefined, options?.labelEscapeNewLines);
+
+				if (i < label.length - 1) {
+					dom.append(name, dom.$('span.label-separator', undefined, separator));
+				}
+			}
+		}
+	}
 }

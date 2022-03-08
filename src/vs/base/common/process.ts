@@ -3,25 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  globals,
-  isMacintosh,
-  isWindows,
-  setImmediate,
-} from "vs/base/common/platform";
-import type { INodeProcess } from "vs/base/common/platform";
+import { globals, type INodeProcess, isMacintosh, isWindows } from "vs/base/common/platform";
 
-let safeProcess: Omit<INodeProcess, "arch"> & {
-  nextTick: (callback: (...args: any[]) => void) => void;
-  arch: string | undefined;
-};
+let safeProcess: Omit<INodeProcess, "arch"> & { arch: string | undefined };
 declare const process: INodeProcess;
 
 // Native sandbox environment
-if (
-  typeof globals.vscode !== "undefined" &&
-  typeof globals.vscode.process !== "undefined"
-) {
+if (typeof globals.vscode !== "undefined" && typeof globals.vscode.process !== "undefined") {
   const sandboxProcess: INodeProcess = globals.vscode.process;
   safeProcess = {
     get platform() {
@@ -35,9 +23,6 @@ if (
     },
     cwd() {
       return sandboxProcess.cwd();
-    },
-    nextTick(callback: (...args: any[]) => void): void {
-      return setImmediate(callback);
     },
   };
 }
@@ -57,9 +42,6 @@ else if (typeof process !== "undefined") {
     cwd() {
       return process.env["VSCODE_CWD"] || process.cwd();
     },
-    nextTick(callback: (...args: any[]) => void): void {
-      return process.nextTick!(callback);
-    },
   };
 }
 
@@ -72,9 +54,6 @@ else {
     },
     get arch() {
       return undefined; /* arch is undefined in web */
-    },
-    nextTick(callback: (...args: any[]) => void): void {
-      return setImmediate(callback);
     },
 
     // Unsupported
@@ -108,12 +87,6 @@ export const env = safeProcess.env;
  * environments.
  */
 export const platform = safeProcess.platform;
-
-/**
- * Provides safe access to the `nextTick` method in node.js, sandboxed or web
- * environments.
- */
-export const nextTick = safeProcess.nextTick;
 
 /**
  * Provides safe access to the `arch` method in node.js, sandboxed or web

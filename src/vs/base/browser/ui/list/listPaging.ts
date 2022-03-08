@@ -6,15 +6,13 @@
 import { range } from "vs/base/common/arrays";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import type { IDisposable } from "vs/base/common/lifecycle";
+import { Disposable, type IDisposable } from "vs/base/common/lifecycle";
 import type { IPagedModel } from "vs/base/common/paging";
 import type { ScrollbarVisibility } from "vs/base/common/scrollable";
 import type { IThemable } from "vs/base/common/styler";
-import "./list.css";
+import "vs/css!./list";
 import type { IListContextMenuEvent, IListEvent, IListMouseEvent, IListRenderer, IListVirtualDelegate } from "./list";
-import type { IListAccessibilityProvider, IListOptions, IListOptionsUpdate, IListStyles } from "./listWidget";
-import { List } from "./listWidget";
+import { type IListAccessibilityProvider, type IListOptions, type IListOptionsUpdate, type IListStyles, List } from "./listWidget";
 
 export interface IPagedRenderer<TElement, TTemplateData> extends IListRenderer<TElement, TTemplateData> {
   renderPlaceholder(index: number, templateData: TTemplateData): void;
@@ -159,51 +157,27 @@ export class PagedList<T> implements IThemable, IDisposable {
   }
 
   get onMouseClick(): Event<IListMouseEvent<T>> {
-    return Event.map(this.list.onMouseClick, ({ element, index, browserEvent }) => ({
-      element: element === undefined ? undefined : this._model.get(element),
-      index,
-      browserEvent,
-    }));
+    return Event.map(this.list.onMouseClick, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
   }
 
   get onMouseDblClick(): Event<IListMouseEvent<T>> {
-    return Event.map(this.list.onMouseDblClick, ({ element, index, browserEvent }) => ({
-      element: element === undefined ? undefined : this._model.get(element),
-      index,
-      browserEvent,
-    }));
+    return Event.map(this.list.onMouseDblClick, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
   }
 
   get onTap(): Event<IListMouseEvent<T>> {
-    return Event.map(this.list.onTap, ({ element, index, browserEvent }) => ({
-      element: element === undefined ? undefined : this._model.get(element),
-      index,
-      browserEvent,
-    }));
+    return Event.map(this.list.onTap, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
   }
 
   get onPointer(): Event<IListMouseEvent<T>> {
-    return Event.map(this.list.onPointer, ({ element, index, browserEvent }) => ({
-      element: element === undefined ? undefined : this._model.get(element),
-      index,
-      browserEvent,
-    }));
+    return Event.map(this.list.onPointer, ({ element, index, browserEvent }) => ({ element: element === undefined ? undefined : this._model.get(element), index, browserEvent }));
   }
 
   get onDidChangeFocus(): Event<IListEvent<T>> {
-    return Event.map(this.list.onDidChangeFocus, ({ elements, indexes, browserEvent }) => ({
-      elements: elements.map((e) => this._model.get(e)),
-      indexes,
-      browserEvent,
-    }));
+    return Event.map(this.list.onDidChangeFocus, ({ elements, indexes, browserEvent }) => ({ elements: elements.map((e) => this._model.get(e)), indexes, browserEvent }));
   }
 
   get onDidChangeSelection(): Event<IListEvent<T>> {
-    return Event.map(this.list.onDidChangeSelection, ({ elements, indexes, browserEvent }) => ({
-      elements: elements.map((e) => this._model.get(e)),
-      indexes,
-      browserEvent,
-    }));
+    return Event.map(this.list.onDidChangeSelection, ({ elements, indexes, browserEvent }) => ({ elements: elements.map((e) => this._model.get(e)), indexes, browserEvent }));
   }
 
   get onContextMenu(): Event<IListContextMenuEvent<T>> {

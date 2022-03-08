@@ -5,10 +5,18 @@
 
 import type { IIdentityProvider } from "vs/base/browser/ui/list/list";
 import type { IIndexTreeModelSpliceOptions, IList } from "vs/base/browser/ui/tree/indexTreeModel";
-import type { IObjectTreeModel, IObjectTreeModelOptions, IObjectTreeModelSetChildrenOptions } from "vs/base/browser/ui/tree/objectTreeModel";
-import { ObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
-import type { ICollapseStateChangeEvent, ITreeElement, ITreeModel, ITreeModelSpliceEvent, ITreeNode, TreeFilterResult } from "vs/base/browser/ui/tree/tree";
-import { TreeError, TreeVisibility, WeakMapper } from "vs/base/browser/ui/tree/tree";
+import { type IObjectTreeModel, type IObjectTreeModelOptions, type IObjectTreeModelSetChildrenOptions, ObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
+import {
+  type ICollapseStateChangeEvent,
+  type ITreeElement,
+  type ITreeModel,
+  type ITreeModelSpliceEvent,
+  type ITreeNode,
+  TreeError,
+  type TreeFilterResult,
+  TreeVisibility,
+  WeakMapper,
+} from "vs/base/browser/ui/tree/tree";
 import { Event } from "vs/base/common/event";
 import { Iterable } from "vs/base/common/iterator";
 
@@ -104,10 +112,7 @@ function splice<T>(treeElement: ICompressedTreeElement<T>, element: T, children:
     return { ...treeElement, children };
   }
 
-  return {
-    ...treeElement,
-    children: Iterable.map(Iterable.from(treeElement.children), (e) => splice(e, element, children)),
-  };
+  return { ...treeElement, children: Iterable.map(Iterable.from(treeElement.children), (e) => splice(e, element, children)) };
 }
 
 interface ICompressedObjectTreeModelOptions<T, TFilterData> extends IObjectTreeModelOptions<ICompressedTreeNode<T>, TFilterData> {
@@ -156,10 +161,7 @@ export class CompressedObjectTreeModel<T extends NonNullable<any>, TFilterData e
     const diffIdentityProvider = options.diffIdentityProvider && wrapIdentityProvider(options.diffIdentityProvider);
     if (element === null) {
       const compressedChildren = Iterable.map(children, this.enabled ? compress : noCompress);
-      this._setChildren(null, compressedChildren, {
-        diffIdentityProvider,
-        diffDepth: Infinity,
-      });
+      this._setChildren(null, compressedChildren, { diffIdentityProvider, diffDepth: Infinity });
       return;
     }
 
@@ -230,11 +232,7 @@ export class CompressedObjectTreeModel<T extends NonNullable<any>, TFilterData e
       }
     };
 
-    this.model.setChildren(node, children, {
-      ...options,
-      onDidCreateNode,
-      onDidDeleteNode,
-    });
+    this.model.setChildren(node, children, { ...options, onDidCreateNode, onDidDeleteNode });
   }
 
   has(element: T | null): boolean {

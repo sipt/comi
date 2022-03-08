@@ -4,8 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IDragAndDropData } from "vs/base/browser/dnd";
-import type { IListDragAndDrop, IListDragOverReaction, IListRenderer } from "vs/base/browser/ui/list/list";
-import { ListDragOverEffect } from "vs/base/browser/ui/list/list";
+import { type IListDragAndDrop, type IListDragOverReaction, type IListRenderer, ListDragOverEffect } from "vs/base/browser/ui/list/list";
 import type { Event } from "vs/base/common/event";
 
 export const enum TreeVisibility {
@@ -190,19 +189,10 @@ export const TreeDragOverReactions = {
     return { accept: true, bubble: TreeDragOverBubble.Down, autoExpand };
   },
   acceptCopyBubbleUp(): ITreeDragOverReaction {
-    return {
-      accept: true,
-      bubble: TreeDragOverBubble.Up,
-      effect: ListDragOverEffect.Copy,
-    };
+    return { accept: true, bubble: TreeDragOverBubble.Up, effect: ListDragOverEffect.Copy };
   },
   acceptCopyBubbleDown(autoExpand = false): ITreeDragOverReaction {
-    return {
-      accept: true,
-      bubble: TreeDragOverBubble.Down,
-      effect: ListDragOverEffect.Copy,
-      autoExpand,
-    };
+    return { accept: true, bubble: TreeDragOverBubble.Down, effect: ListDragOverEffect.Copy, autoExpand };
   },
 };
 

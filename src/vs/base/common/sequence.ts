@@ -45,11 +45,7 @@ export class SimpleSequence<T> implements ISequence<T> {
   constructor(elements: T[], onDidAdd: Event<T>, onDidRemove: Event<T>) {
     this._elements = [...elements];
     this.onDidSplice = Event.any(
-      Event.map(onDidAdd, (e) => ({
-        start: this.elements.length,
-        deleteCount: 0,
-        toInsert: [e],
-      })),
+      Event.map(onDidAdd, (e) => ({ start: this.elements.length, deleteCount: 0, toInsert: [e] })),
       Event.map(
         Event.filter(
           Event.map(onDidRemove, (e) => this.elements.indexOf(e)),
@@ -59,9 +55,7 @@ export class SimpleSequence<T> implements ISequence<T> {
       )
     );
 
-    this.disposable = this.onDidSplice(({ start, deleteCount, toInsert }) =>
-      this._elements.splice(start, deleteCount, ...toInsert)
-    );
+    this.disposable = this.onDidSplice(({ start, deleteCount, toInsert }) => this._elements.splice(start, deleteCount, ...toInsert));
   }
 
   dispose(): void {

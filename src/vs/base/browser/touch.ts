@@ -6,8 +6,7 @@
 import * as DomUtils from "vs/base/browser/dom";
 import * as arrays from "vs/base/common/arrays";
 import { memoize } from "vs/base/common/decorators";
-import type { IDisposable } from "vs/base/common/lifecycle";
-import { Disposable } from "vs/base/common/lifecycle";
+import { Disposable, type IDisposable } from "vs/base/common/lifecycle";
 
 export namespace EventType {
   export const Tap = "-monaco-gesturetap";
@@ -89,27 +88,9 @@ export class Gesture extends Disposable {
     this.targets = [];
     this.ignoreTargets = [];
     this._lastSetTapCountTime = 0;
-    this._register(
-      DomUtils.addDisposableListener(
-        document,
-        "touchstart",
-        (e: TouchEvent) => this.onTouchStart(e),
-        { passive: false }
-      )
-    );
-    this._register(
-      DomUtils.addDisposableListener(document, "touchend", (e: TouchEvent) =>
-        this.onTouchEnd(e)
-      )
-    );
-    this._register(
-      DomUtils.addDisposableListener(
-        document,
-        "touchmove",
-        (e: TouchEvent) => this.onTouchMove(e),
-        { passive: false }
-      )
-    );
+    this._register(DomUtils.addDisposableListener(document, "touchstart", (e: TouchEvent) => this.onTouchStart(e), { passive: false }));
+    this._register(DomUtils.addDisposableListener(document, "touchend", (e: TouchEvent) => this.onTouchEnd(e)));
+    this._register(DomUtils.addDisposableListener(document, "touchmove", (e: TouchEvent) => this.onTouchMove(e), { passive: false }));
   }
 
   public static addTarget(element: HTMLElement): IDisposable {
@@ -124,9 +105,7 @@ export class Gesture extends Disposable {
 
     return {
       dispose: () => {
-        Gesture.INSTANCE.targets = Gesture.INSTANCE.targets.filter(
-          (t) => t !== element
-        );
+        Gesture.INSTANCE.targets = Gesture.INSTANCE.targets.filter((t) => t !== element);
       },
     };
   }
@@ -143,9 +122,7 @@ export class Gesture extends Disposable {
 
     return {
       dispose: () => {
-        Gesture.INSTANCE.ignoreTargets = Gesture.INSTANCE.ignoreTargets.filter(
-          (t) => t !== element
-        );
+        Gesture.INSTANCE.ignoreTargets = Gesture.INSTANCE.ignoreTargets.filter((t) => t !== element);
       },
     };
   }
@@ -217,24 +194,13 @@ export class Gesture extends Disposable {
       let data = this.activeTouches[touch.identifier],
         holdTime = Date.now() - data.initialTimeStamp;
 
-      if (
-        holdTime < Gesture.HOLD_DELAY &&
-        Math.abs(data.initialPageX - arrays.tail(data.rollingPageX)) < 30 &&
-        Math.abs(data.initialPageY - arrays.tail(data.rollingPageY)) < 30
-      ) {
+      if (holdTime < Gesture.HOLD_DELAY && Math.abs(data.initialPageX - arrays.tail(data.rollingPageX)) < 30 && Math.abs(data.initialPageY - arrays.tail(data.rollingPageY)) < 30) {
         let evt = this.newGestureEvent(EventType.Tap, data.initialTarget);
         evt.pageX = arrays.tail(data.rollingPageX);
         evt.pageY = arrays.tail(data.rollingPageY);
         this.dispatchEvent(evt);
-      } else if (
-        holdTime >= Gesture.HOLD_DELAY &&
-        Math.abs(data.initialPageX - arrays.tail(data.rollingPageX)) < 30 &&
-        Math.abs(data.initialPageY - arrays.tail(data.rollingPageY)) < 30
-      ) {
-        let evt = this.newGestureEvent(
-          EventType.Contextmenu,
-          data.initialTarget
-        );
+      } else if (holdTime >= Gesture.HOLD_DELAY && Math.abs(data.initialPageX - arrays.tail(data.rollingPageX)) < 30 && Math.abs(data.initialPageY - arrays.tail(data.rollingPageY)) < 30) {
+        let evt = this.newGestureEvent(EventType.Contextmenu, data.initialTarget);
         evt.pageX = arrays.tail(data.rollingPageX);
         evt.pageY = arrays.tail(data.rollingPageY);
         this.dispatchEvent(evt);
@@ -242,16 +208,12 @@ export class Gesture extends Disposable {
         let finalX = arrays.tail(data.rollingPageX);
         let finalY = arrays.tail(data.rollingPageY);
 
-        let deltaT =
-          arrays.tail(data.rollingTimestamps) - data.rollingTimestamps[0];
+        let deltaT = arrays.tail(data.rollingTimestamps) - data.rollingTimestamps[0];
         let deltaX = finalX - data.rollingPageX[0];
         let deltaY = finalY - data.rollingPageY[0];
 
         // We need to get all the dispatch targets on the start of the inertia event
-        const dispatchTo = this.targets.filter(
-          (t) =>
-            data.initialTarget instanceof Node && t.contains(data.initialTarget)
-        );
+        const dispatchTo = this.targets.filter((t) => data.initialTarget instanceof Node && t.contains(data.initialTarget));
         this.inertia(
           dispatchTo,
           timestamp, // time now
@@ -264,9 +226,7 @@ export class Gesture extends Disposable {
         );
       }
 
-      this.dispatchEvent(
-        this.newGestureEvent(EventType.End, data.initialTarget)
-      );
+      this.dispatchEvent(this.newGestureEvent(EventType.End, data.initialTarget));
       // forget about this touch
       delete this.activeTouches[touch.identifier];
     }
@@ -278,10 +238,7 @@ export class Gesture extends Disposable {
     }
   }
 
-  private newGestureEvent(
-    type: string,
-    initialTarget?: EventTarget
-  ): GestureEvent {
+  private newGestureEvent(type: string, initialTarget?: EventTarget): GestureEvent {
     let event = document.createEvent("CustomEvent") as unknown as GestureEvent;
     event.initEvent(type, false, true);
     event.initialTarget = initialTarget;
@@ -293,10 +250,7 @@ export class Gesture extends Disposable {
     if (event.type === EventType.Tap) {
       const currentTime = new Date().getTime();
       let setTapCount = 0;
-      if (
-        currentTime - this._lastSetTapCountTime >
-        Gesture.CLEAR_TAP_COUNT_TIME
-      ) {
+      if (currentTime - this._lastSetTapCountTime > Gesture.CLEAR_TAP_COUNT_TIME) {
         setTapCount = 1;
       } else {
         setTapCount = 2;
@@ -304,44 +258,26 @@ export class Gesture extends Disposable {
 
       this._lastSetTapCountTime = currentTime;
       event.tapCount = setTapCount;
-    } else if (
-      event.type === EventType.Change ||
-      event.type === EventType.Contextmenu
-    ) {
+    } else if (event.type === EventType.Change || event.type === EventType.Contextmenu) {
       // tap is canceled by scrolling or context menu
       this._lastSetTapCountTime = 0;
     }
 
     for (let i = 0; i < this.ignoreTargets.length; i++) {
-      if (
-        event.initialTarget instanceof Node &&
-        this.ignoreTargets[i].contains(event.initialTarget)
-      ) {
+      if (event.initialTarget instanceof Node && this.ignoreTargets[i].contains(event.initialTarget)) {
         return;
       }
     }
 
     this.targets.forEach((target) => {
-      if (
-        event.initialTarget instanceof Node &&
-        target.contains(event.initialTarget)
-      ) {
+      if (event.initialTarget instanceof Node && target.contains(event.initialTarget)) {
         target.dispatchEvent(event);
         this.dispatched = true;
       }
     });
   }
 
-  private inertia(
-    dispatchTo: EventTarget[],
-    t1: number,
-    vX: number,
-    dirX: number,
-    x: number,
-    vY: number,
-    dirY: number,
-    y: number
-  ): void {
+  private inertia(dispatchTo: EventTarget[], t1: number, vX: number, dirX: number, x: number, vY: number, dirY: number, y: number): void {
     this.handle = DomUtils.scheduleAtNextAnimationFrame(() => {
       let now = Date.now();
 
@@ -371,16 +307,7 @@ export class Gesture extends Disposable {
       dispatchTo.forEach((d) => d.dispatchEvent(evt));
 
       if (!stopped) {
-        this.inertia(
-          dispatchTo,
-          now,
-          vX,
-          dirX,
-          x + delta_pos_x,
-          vY,
-          dirY,
-          y + delta_pos_y
-        );
+        this.inertia(dispatchTo, now, vX, dirX, x + delta_pos_x, vY, dirY, y + delta_pos_y);
       }
     });
   }

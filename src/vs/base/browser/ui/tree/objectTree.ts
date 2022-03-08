@@ -4,13 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IIdentityProvider, IKeyboardNavigationLabelProvider, IListVirtualDelegate } from "vs/base/browser/ui/list/list";
-import { AbstractTree } from "vs/base/browser/ui/tree/abstractTree";
-import type { IAbstractTreeOptions, IAbstractTreeOptionsUpdate } from "vs/base/browser/ui/tree/abstractTree";
-import { CompressibleObjectTreeModel } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
-import type { ElementMapper, ICompressedTreeElement, ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
+import { AbstractTree, type IAbstractTreeOptions, type IAbstractTreeOptionsUpdate } from "vs/base/browser/ui/tree/abstractTree";
+import { CompressibleObjectTreeModel, type ElementMapper, type ICompressedTreeElement, type ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
 import type { IList } from "vs/base/browser/ui/tree/indexTreeModel";
-import type { IObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
-import { ObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
+import { type IObjectTreeModel, ObjectTreeModel } from "vs/base/browser/ui/tree/objectTreeModel";
 import type { ICollapseStateChangeEvent, ITreeElement, ITreeModel, ITreeNode, ITreeRenderer, ITreeSorter } from "vs/base/browser/ui/tree/tree";
 import { memoize } from "vs/base/common/decorators";
 import type { Event } from "vs/base/common/event";
@@ -38,6 +35,13 @@ export interface IObjectTreeSetChildrenOptions<T> {
   readonly diffIdentityProvider?: IIdentityProvider<T>;
 }
 
+export interface IObjectTreeViewState {
+  readonly focus: string[];
+  readonly selection: string[];
+  readonly expanded: string[];
+  readonly scrollTop: number;
+}
+
 export class ObjectTree<T extends NonNullable<any>, TFilterData = void> extends AbstractTree<T | null, TFilterData, T | null> {
   protected override model!: IObjectTreeModel<T, TFilterData>;
 
@@ -45,7 +49,13 @@ export class ObjectTree<T extends NonNullable<any>, TFilterData = void> extends 
     return this.model.onDidChangeCollapseState;
   }
 
-  constructor(user: string, container: HTMLElement, delegate: IListVirtualDelegate<T>, renderers: ITreeRenderer<T, TFilterData, any>[], options: IObjectTreeOptions<T, TFilterData> = {}) {
+  constructor(
+    protected readonly user: string,
+    container: HTMLElement,
+    delegate: IListVirtualDelegate<T>,
+    renderers: ITreeRenderer<T, TFilterData, any>[],
+    options: IObjectTreeOptions<T, TFilterData> = {}
+  ) {
     super(user, container, delegate, renderers, options as IObjectTreeOptions<T | null, TFilterData>);
   }
 
