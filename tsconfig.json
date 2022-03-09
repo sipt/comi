@@ -4,7 +4,7 @@
 		"removeComments": false,
 		"preserveConstEnums": true,
 		"sourceMap": false,
-		"outDir": "../out/vs",
+		"outDir": "./out/vs",
 		"target": "es2020",
 		"types": [
 			"keytar",
@@ -24,6 +24,7 @@
 	},
 	"include": [
 		"./src",
+		"./src/**/*.js"
 	],
   "files": [],
   "references": [

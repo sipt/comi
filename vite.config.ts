@@ -18,6 +18,8 @@ export default defineConfig({
       },
       { find: "vs/base", replacement: fileURLToPath(new URL("./src/vs/base", import.meta.url)) },
       { find: "vs/platform", replacement: fileURLToPath(new URL("./src/vs/platform", import.meta.url)) },
+      { find: "vs/workbench", replacement: fileURLToPath(new URL("./src/vs/workbench", import.meta.url)) },
+      { find: "vs/editor", replacement: fileURLToPath(new URL("./src/vs/editor", import.meta.url)) },
       { find: "vs/nls", replacement: fileURLToPath(new URL("./src/vs/nls.mock.ts", import.meta.url)) },
     ] as Alias[],
   },

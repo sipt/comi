@@ -8,10 +8,35 @@ import { IDataSource, ITreeNode, ITreeRenderer } from "./vs/base/browser/ui/tree
 import { IListVirtualDelegate } from "./vs/base/browser/ui/list/list";
 import { Event } from "./vs/base/common/event";
 import { DefaultStyleController } from "./vs/base/browser/ui/list/listWidget";
-import type { IStyleController } from "./vs/base/browser/ui/list/listWidget";
+import { getSingletonServiceDescriptors } from "./vs/platform/instantiation/common/extensions";
 import { createStyleSheet } from "./vs/base/browser/dom";
 import { getIconsStyleSheet } from "./vs/platform/theme/browser/iconsStyleSheet";
 import { RunOnceScheduler } from "./vs/base/common/async";
+import { editorBackground, focusBorder, foreground, transparent } from "./vs/platform/theme/common/colorRegistry";
+import { attachStyler, IToggleStyleOverrides } from "./vs/platform/theme/common/styler";
+import { IInstantiationService, ServicesAccessor } from "./vs/platform/instantiation/common/instantiation";
+import { InstantiationService } from "./vs/platform/instantiation/common/instantiationService";
+import { ServiceCollection } from "./vs/platform/instantiation/common/serviceCollection";
+import { IWorkbenchThemeService } from "./vs/workbench/services/themes/common/workbenchThemeService";
+import { Color, RGBA } from "./vs/base/common/color";
+import "./vs/workbench/services/themes/browser/workbenchThemeService";
+import "./vs/workbench/services/language/common/languageService";
+import {
+  focusedRowBackground,
+  focusedRowBorder,
+  rowHoverBackground,
+  settingsHeaderForeground,
+  settingsNumberInputBackground,
+  settingsNumberInputBorder,
+  settingsNumberInputForeground,
+  settingsSelectBackground,
+  settingsSelectBorder,
+  settingsSelectForeground,
+  settingsSelectListBorder,
+  settingsTextInputBackground,
+  settingsTextInputBorder,
+  settingsTextInputForeground,
+} from "./vs/workbench/contrib/preferences/common/settingsEditorColorRegistry";
 
 class ApiTreeViewController implements IListVirtualDelegate<TreeNode>, IDataSource<TreeNode, TreeNode>, IDataTreeOptions<TreeNode, void> {
   constructor() {}
@@ -47,26 +72,30 @@ class ApiTreeViewController implements IListVirtualDelegate<TreeNode>, IDataSour
 
 class GroupRenderer implements ITreeRenderer<TreeNode, void, HTMLElement> {
   onDidChangeTwistieState?: Event<TreeNode> | undefined;
-  templateId: string = "group";
+  templateId = "group";
   renderTemplate(container: HTMLElement): HTMLElement {
     return container;
   }
   renderElement(element: ITreeNode<TreeNode, void>, index: number, templateData: HTMLElement, height: number | undefined): void {
     templateData.textContent = element.element.title;
   }
-  disposeTemplate(templateData: HTMLElement): void {}
+  disposeTemplate(): void {
+    return;
+  }
 }
 
 class LeafRenderer implements ITreeRenderer<TreeNode, void, HTMLElement> {
   onDidChangeTwistieState?: Event<TreeNode> | undefined;
-  templateId: string = "leaf";
+  templateId = "leaf";
   renderTemplate(container: HTMLElement): HTMLElement {
     return container;
   }
   renderElement(element: ITreeNode<TreeNode, void>, index: number, templateData: HTMLElement, height: number | undefined): void {
     templateData.textContent = element.element.title;
   }
-  disposeTemplate(templateData: HTMLElement): void {}
+  disposeTemplate(): void {
+    return;
+  }
 }
 // const store = ApiTreeStore();
 // const data =
@@ -97,6 +126,39 @@ onMounted(() => {
     tree.setInput(
       new TreeNode("0", "root", false, [new TreeNode("1", "account", false, [new TreeNode("1-1", "Sign Up", true), new TreeNode("1-2", "Sign In", true), new TreeNode("1-3", "Sign Out", true)])])
     );
+    let serviceCollection = new ServiceCollection();
+    const contributedServices = getSingletonServiceDescriptors();
+    for (let [id, descriptor] of contributedServices) {
+      serviceCollection.set(id, descriptor);
+    }
+    console.log(contributedServices);
+
+    const instantiationService = new InstantiationService(serviceCollection, true);
+    instantiationService.invokeFunction((accessor: ServicesAccessor) => {
+      let themeService = accessor.get(IWorkbenchThemeService);
+      attachStyler(
+        themeService,
+        {
+          listBackground: editorBackground,
+          listFocusOutline: focusBorder,
+          listActiveSelectionBackground: editorBackground,
+          listActiveSelectionForeground: settingsHeaderForeground,
+          listFocusAndSelectionBackground: editorBackground,
+          listFocusAndSelectionForeground: settingsHeaderForeground,
+          listFocusBackground: editorBackground,
+          listFocusForeground: transparent(foreground, 0.9),
+          listHoverForeground: transparent(foreground, 0.9),
+          listHoverBackground: editorBackground,
+          listInactiveSelectionBackground: editorBackground,
+          listInactiveSelectionForeground: settingsHeaderForeground,
+          listInactiveFocusBackground: editorBackground,
+          listInactiveFocusOutline: editorBackground,
+        },
+        (colors: IToggleStyleOverrides) => {
+          tree.style(colors);
+        }
+      );
+    });
   }
 });
 

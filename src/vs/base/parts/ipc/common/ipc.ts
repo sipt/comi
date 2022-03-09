@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { getRandomElement } from 'vs/base/common/arrays';
-import { CancelablePromise, createCancelablePromise, timeout } from 'vs/base/common/async';
+import { type CancelablePromise, createCancelablePromise, timeout } from "vs/base/common/async";
 import { VSBuffer } from 'vs/base/common/buffer';
 import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
 import { memoize } from 'vs/base/common/decorators';
 import * as errors from 'vs/base/common/errors';
 import { Emitter, Event, EventMultiplexer, Relay } from 'vs/base/common/event';
-import { combinedDisposable, DisposableStore, dispose, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { combinedDisposable, DisposableStore, dispose, type IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { revive } from 'vs/base/common/marshalling';
 import * as strings from 'vs/base/common/strings';
 import { isFunction, isUndefinedOrNull } from 'vs/base/common/types';

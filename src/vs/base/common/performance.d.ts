@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface PerformanceMark {
-	readonly name: string;
-	readonly startTime: number;
+  readonly name: string;
+  readonly startTime: number;
 }
 
 export function mark(name: string): void;
